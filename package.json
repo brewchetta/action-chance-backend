@@ -1,0 +1,10 @@
+{
+  "name": "action-chance-backend",
+  "version": "0.0.1",
+  "description": "Backend server for syncing data between different action-chance clients.",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongodb": "^3.3.0-beta2",
+    "socket.io": "^2.2.0"
+  }
+}
