@@ -15,6 +15,7 @@ const mongoConnect = callback => MongoClient.connect(`mongodb://localhost:27017/
 // User Count
 let userCount = 0
 let participants = []
+let activeParticipant = null
 
 /* Socket.IO */
 const onConnect = (clientIP) => {
@@ -34,6 +35,11 @@ const onParticipantsChange = newParticipants => {
   io.emit('change participants', newParticipants)
 }
 
+const onActiveParticipantChange = newActiveParticipant => {
+  activeParticipant = newActiveParticipant
+  io.emit('change active participant', activeParticipant)
+}
+
 const socketConnect = socket => {
   // Initial connection
   onConnect(socket.handshake.headers.origin)
@@ -41,6 +47,7 @@ const socketConnect = socket => {
   // Other connection types
   socket.on(`disconnect`, () => onDisconnect(socket.handshake.headers.origin))
   socket.on('change participants', onParticipantsChange)
+  socket.on('change active participant', onActiveParticipantChange)
 }
 
 io.on(`connection`, socketConnect)
