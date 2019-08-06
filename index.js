@@ -16,6 +16,7 @@ const mongoConnect = callback => MongoClient.connect(`mongodb://localhost:27017/
 let userCount = 0
 let participants = []
 let activeParticipant = null
+let bgImage = "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg"
 
 /* Socket.IO */
 const onConnect = (clientIP) => {
@@ -40,6 +41,11 @@ const onActiveParticipantChange = newActiveParticipant => {
   io.emit('change active participant', activeParticipant)
 }
 
+const onBGImageChange = newBGImage => {
+  bgImage = newBGImage
+  io.emit('change background image', bgImage)
+}
+
 const socketConnect = socket => {
   // Initial connection
   onConnect(socket.handshake.headers.origin)
@@ -48,6 +54,7 @@ const socketConnect = socket => {
   socket.on(`disconnect`, () => onDisconnect(socket.handshake.headers.origin))
   socket.on('change participants', onParticipantsChange)
   socket.on('change active participant', onActiveParticipantChange)
+  socket.on('change background image', onBGImageChange)
 }
 
 io.on(`connection`, socketConnect)
