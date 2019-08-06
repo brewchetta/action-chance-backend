@@ -12,30 +12,52 @@ const mongoConnect = callback => MongoClient.connect(`mongodb://localhost:27017/
   callback(client.db(`actionchance`))
 })
 
-// User Count
+const getParticipants = callback => mongoConnect(db => {
+  db.collection("participants").find().toArray((err, result) => {
+    if (err) throw err
+    callback(result)
+  })
+})
+
+const saveParticipants = (participants, callback) => mongoConnect(db => {
+  db.collection("participants").remove({})
+  db.collection("participants").insert(participants)
+  callback(participants)
+})
+
+/* Variables */
 let userCount = 0
-let participants = []
+// let participants = []
 let activeParticipant = null
 let bg = {image: "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg", mask: {color: '#7D7D7D', intensity: 25}}
 let displayMessage = '|||'
 
 /* Socket.IO */
+
+// sends client all the up to date info once they're connected
 const onConnect = (clientIP) => {
   userCount ++
   console.log(`\n---connection: ${clientIP} --------- ${userCount} users---`)
-  io.emit(`user connect`, {message: `---a new user connected: ${clientIP}---`, userCount, participants})
   io.emit('change background', bg)
+  getParticipants(participants => {
+    io.emit(`user connect`, {message: `---a new user connected: ${clientIP}---`, userCount, participants})
+  })
 }
 
+// simple message logs when a client disconnects
 const onDisconnect = (clientIP) => {
   userCount --
   console.log(`\n---disconnect: ${clientIP} --------- ${userCount} users---`)
-  io.emit(`user connect`, {message:`---a user disconnected: ${clientIP}---`, userCount, participants})
+  getParticipants(participants => {
+    io.emit(`user connect`, {message: `---a user disconnected: ${clientIP}---`, userCount, participants})
+  })
 }
 
+/* On Change Callbacks */
 const onParticipantsChange = newParticipants => {
-  participants = newParticipants
-  io.emit('change participants', newParticipants)
+  saveParticipants(newParticipants, participants => {
+    io.emit('change participants', newParticipants)
+  })
 }
 
 const onActiveParticipantChange = newActiveParticipant => {
@@ -52,6 +74,8 @@ const onDisplayMessageChange = newMessage => {
   displayMessage = newMessage
   io.emit('change display message', displayMessage)
 }
+
+/* Main Socket Connection */
 
 const socketConnect = socket => {
   // Initial connection
