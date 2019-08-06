@@ -25,10 +25,23 @@ const saveParticipants = (participants, callback) => mongoConnect(db => {
   callback(participants)
 })
 
+const getActiveParticipant = callback => mongoConnect(db => {
+  db.collection("activeParticipant").find().toArray((err, result) => {
+    if (err) throw err
+    callback(result)
+  })
+})
+
+const saveActiveParticipant = (participant, callback) => mongoConnect(db => {
+  db.collection("activeParticipant").remove({})
+  db.collection("activeParticipant").insert(participant)
+  callback(participant)
+})
+
 /* Variables */
 let userCount = 0
 // let participants = []
-let activeParticipant = null
+// let activeParticipant = null
 let bg = {image: "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg", mask: {color: '#7D7D7D', intensity: 25}}
 let displayMessage = '|||'
 
@@ -36,20 +49,28 @@ let displayMessage = '|||'
 
 // sends client all the up to date info once they're connected
 const onConnect = (clientIP) => {
+  const message = `---a new user connected: ${clientIP}---`
+
   userCount ++
   console.log(`\n---connection: ${clientIP} --------- ${userCount} users---`)
   io.emit('change background', bg)
   getParticipants(participants => {
-    io.emit(`user connect`, {message: `---a new user connected: ${clientIP}---`, userCount, participants})
+    getActiveParticipant(participant => {
+      const activeParticipant = participant[0] ? participant[0] : null
+      io.emit(`user connect`, {message, userCount, participants, activeParticipant})
+    })
   })
 }
 
 // simple message logs when a client disconnects
 const onDisconnect = (clientIP) => {
+  const message = `---a user disconnected: ${clientIP}---`
   userCount --
   console.log(`\n---disconnect: ${clientIP} --------- ${userCount} users---`)
   getParticipants(participants => {
-    io.emit(`user connect`, {message: `---a user disconnected: ${clientIP}---`, userCount, participants})
+    getActiveParticipant(activeParticipant => {
+      io.emit(`user connect`, {message, userCount, participants, activeParticipant})
+    })
   })
 }
 
@@ -60,9 +81,10 @@ const onParticipantsChange = newParticipants => {
   })
 }
 
-const onActiveParticipantChange = newActiveParticipant => {
-  activeParticipant = newActiveParticipant
-  io.emit('change active participant', activeParticipant)
+const onActiveParticipantChange = activeParticipant => {
+  saveActiveParticipant(activeParticipant, () => {
+    io.emit('change active participant', activeParticipant)
+  })
 }
 
 const onBGChange = newBG => {
