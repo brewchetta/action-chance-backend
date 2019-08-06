@@ -16,14 +16,14 @@ const mongoConnect = callback => MongoClient.connect(`mongodb://localhost:27017/
 let userCount = 0
 let participants = []
 let activeParticipant = null
-let bgImage = {image: "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg", mask: {color: '#7D7D7D', intensity: 25}}
+let bg = {image: "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg", mask: {color: '#7D7D7D', intensity: 25}}
 
 /* Socket.IO */
 const onConnect = (clientIP) => {
   userCount ++
   console.log(`\n---connection: ${clientIP} --------- ${userCount} users---`)
   io.emit(`user connect`, {message: `---a new user connected: ${clientIP}---`, userCount, participants})
-  io.emit('change background image', bgImage)
+  io.emit('change background', bg)
 }
 
 const onDisconnect = (clientIP) => {
@@ -44,7 +44,7 @@ const onActiveParticipantChange = newActiveParticipant => {
 
 const onBGChange = newBG => {
   bg = newBG
-  io.emit('change background image', bg)
+  io.emit('change background', bg)
 }
 
 const socketConnect = socket => {
