@@ -17,6 +17,7 @@ let userCount = 0
 let participants = []
 let activeParticipant = null
 let bg = {image: "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg", mask: {color: '#7D7D7D', intensity: 25}}
+let displayMessage = '|||'
 
 /* Socket.IO */
 const onConnect = (clientIP) => {
@@ -47,6 +48,11 @@ const onBGChange = newBG => {
   io.emit('change background', bg)
 }
 
+const onDisplayMessageChange = newMessage => {
+  displayMessage = newMessage
+  io.emit('change display message', displayMessage)
+}
+
 const socketConnect = socket => {
   // Initial connection
   onConnect(socket.handshake.headers.origin)
@@ -56,6 +62,7 @@ const socketConnect = socket => {
   socket.on('change participants', onParticipantsChange)
   socket.on('change active participant', onActiveParticipantChange)
   socket.on('change background', onBGChange)
+  socket.on('change display message', onDisplayMessageChange)
 }
 
 io.on(`connection`, socketConnect)
