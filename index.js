@@ -5,6 +5,10 @@ const port = 3050
 const io = require(`socket.io`)(http)
 const MongoClient = require(`mongodb`).MongoClient
 
+/* Variables */
+let userCount = 0
+let bg = {image: "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg", mask: {color: '#7D7D7D', intensity: 25}}
+let displayMessage = '|||'
 
 /* Mongo */
 const mongoConnect = callback => MongoClient.connect(`mongodb://localhost:27017/actionchance`, (error, client) => {
@@ -12,54 +16,40 @@ const mongoConnect = callback => MongoClient.connect(`mongodb://localhost:27017/
   callback(client.db(`actionchance`))
 })
 
-const getParticipants = callback => mongoConnect(db => {
-  db.collection("participants").find().toArray((err, result) => {
+// Get a record from a collection
+const getRecord = (name, dfault, callback) => mongoConnect(db => {
+  db.collection("room1").findOne({name}, (err, result) => {
     if (err) throw err
-    callback(result)
+    if (!result) {
+      console.log(result)
+      console.log(`---creating empty list of ${name} for room1---`)
+      db.collection("room1").insert({name, [name]: dfault })
+      callback(dfault)
+    } else {
+      callback(result[name])
+    }
   })
 })
 
-const saveParticipants = (participants, callback) => mongoConnect(db => {
-  db.collection("participants").remove({})
-  db.collection("participants").insert(participants)
-  callback(participants)
+// Save a record to a colletion
+// --> uses find and replace rather than insert since it should already exist
+const saveRecord = (name, item, callback) => mongoConnect(db => {
+  db.collection("room1").findOneAndReplace({name}, {name, [name]:item})
+  callback(item)
 })
-
-const getActiveParticipant = callback => mongoConnect(db => {
-  db.collection("activeParticipant").find().toArray((err, result) => {
-    if (err) throw err
-    callback(result)
-  })
-})
-
-const saveActiveParticipant = (participant, callback) => mongoConnect(db => {
-  db.collection("activeParticipant").remove({})
-  db.collection("activeParticipant").insert(participant)
-  callback(participant)
-})
-
-/* Variables */
-let userCount = 0
-// let participants = []
-// let activeParticipant = null
-let bg = {image: "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg", mask: {color: '#7D7D7D', intensity: 25}}
-let displayMessage = '|||'
 
 /* Socket.IO */
 
 // sends client all the up to date info once they're connected
-const onConnect = (clientIP) => {
-  const message = `---a new user connected: ${clientIP}---`
-
+const onConnect = (socket) => {
   userCount ++
-  console.log(`\n---connection: ${clientIP} --------- ${userCount} users---`)
-  io.emit('change background', bg)
-  getParticipants(participants => {
-    getActiveParticipant(participant => {
-      const activeParticipant = participant[0] ? participant[0] : null
-      io.emit(`user connect`, {message, userCount, participants, activeParticipant})
-    })
-  })
+  const message = `---a new user connected: ${socket.handshake.headers.origin}---`
+  io.emit('user connect', {message, userCount})
+  console.log(`\n---connection: ${socket.handshake.headers.origin} --------- ${userCount} users---`)
+
+  socket.emit('change background', bg)
+  getRecord('participants', [], participants => socket.emit('change participants', participants))
+  getRecord('activeParticipant', null, activeParticipant => socket.emit('change active participant', activeParticipant))
 }
 
 // simple message logs when a client disconnects
@@ -67,22 +57,18 @@ const onDisconnect = (clientIP) => {
   const message = `---a user disconnected: ${clientIP}---`
   userCount --
   console.log(`\n---disconnect: ${clientIP} --------- ${userCount} users---`)
-  getParticipants(participants => {
-    getActiveParticipant(activeParticipant => {
-      io.emit(`user connect`, {message, userCount, participants, activeParticipant})
-    })
-  })
+  io.emit('user connect', {message, userCount})
 }
 
 /* On Change Callbacks */
 const onParticipantsChange = newParticipants => {
-  saveParticipants(newParticipants, participants => {
+  saveRecord('participants', newParticipants, participants => {
     io.emit('change participants', newParticipants)
   })
 }
 
 const onActiveParticipantChange = activeParticipant => {
-  saveActiveParticipant(activeParticipant, () => {
+  saveRecord('activeParticipant', activeParticipant, () => {
     io.emit('change active participant', activeParticipant)
   })
 }
@@ -101,7 +87,7 @@ const onDisplayMessageChange = newMessage => {
 
 const socketConnect = socket => {
   // Initial connection
-  onConnect(socket.handshake.headers.origin)
+  onConnect(socket)
 
   // Other connection types
   socket.on(`disconnect`, () => onDisconnect(socket.handshake.headers.origin))
