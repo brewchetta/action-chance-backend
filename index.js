@@ -55,7 +55,10 @@ const onConnect = (socket) => {
 
   getRecord('bg', {image: "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg", mask: {color: '#7D7D7D', intensity: 25}}, bg => socket.emit('change background', bg))
 
-  getRecord('initiative', true, initiativeUse => socket.emit('change initiative use', initiativeUse))
+  getRecord('initiative', true, initiativeUse => {
+    console.log('sending initiative:', initiativeUse)
+    socket.emit('change initiative use', initiativeUse)
+  })
 
   socket.emit('change display message', displayMessage)
 }
@@ -95,8 +98,9 @@ const onDisplayMessageChange = newMessage => {
 }
 
 const onInitiativeChange = initiativeUse => {
+  console.log('saving initiative:', initiativeUse)
   saveRecord('initiative', initiativeUse, () => {
-    io.emit('change initiative use')
+    io.emit('change initiative use', initiativeUse)
   })
 }
 
