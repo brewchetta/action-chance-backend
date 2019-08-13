@@ -50,8 +50,13 @@ const onConnect = (socket) => {
 
   // Send new socket all information it needs to get up with the others
   getRecord('participants', [], participants => socket.emit('change participants', participants))
+
   getRecord('activeParticipant', null, activeParticipant => socket.emit('change active participant', activeParticipant))
+
   getRecord('bg', {image: "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg", mask: {color: '#7D7D7D', intensity: 25}}, bg => socket.emit('change background', bg))
+
+  getRecord('initiative', true, initiativeUse => socket.emit('change initiative use', initiativeUse))
+
   socket.emit('change display message', displayMessage)
 }
 
@@ -89,6 +94,12 @@ const onDisplayMessageChange = newMessage => {
   io.emit('change display message', displayMessage)
 }
 
+const onInitiativeChange = initiativeUse => {
+  saveRecord('initiative', initiativeUse, () => {
+    io.emit('change initiative use')
+  })
+}
+
 /* Main Socket Connection */
 
 const socketConnect = socket => {
@@ -101,6 +112,7 @@ const socketConnect = socket => {
   socket.on('change active participant', onActiveParticipantChange)
   socket.on('change background', onBGChange)
   socket.on('change display message', onDisplayMessageChange)
+  socket.on('change initiative use', onInitiativeChange)
 }
 
 io.on(`connection`, socketConnect)
