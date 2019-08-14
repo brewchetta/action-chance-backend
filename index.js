@@ -17,24 +17,24 @@ const mongoConnect = callback => MongoClient.connect(`mongodb://localhost:27017/
 })
 
 // Get a record from a collection
-const getRecord = (name, _default, callback) => mongoConnect(db => {
-  db.collection("room1").findOne({name}, (err, result) => {
+const getRecord = (name, room, _default, callback) => mongoConnect(db => {
+  db.collection(room).findOne({name}, (err, result) => {
     if (err) throw err
     if (!result) {
-      console.log(`---creating new record of ${name} for room1---`)
-      db.collection("room1").insertOne({name, [name]: _default })
-      callback(_default)
+      console.log(`---creating new record of ${name} for ${room}---`)
+      db.collection(room).insertOne({name, [name]: _default })
+      callback({room: room, data: _default})
     } else {
-      callback(result[name])
+      callback({room, data: result[name]})
     }
   })
 })
 
 // Save a record to a colletion
 // --> uses findAndReplace rather than insert since it should already exist
-const saveRecord = (name, item, callback) => mongoConnect(db => {
-  db.collection("room1").findOneAndReplace({name}, {name, [name]:item})
-  callback(item)
+const saveRecord = (name, request, callback) => mongoConnect(db => {
+  db.collection(request.room).findOneAndReplace({name}, {name, [name]:request.data})
+  callback(request)
 })
 
 /* Socket.IO */
@@ -47,15 +47,18 @@ const onConnect = (socket) => {
   const message = `---a new user connected: ${socket.handshake.headers.origin}---`
   io.emit('user connect', {message, userCount})
   console.log(`\n---connection: ${socket.handshake.headers.origin} --------- ${userCount} users---`)
+}
+
+const onRequestRoomInfo = (room, socket) => {
 
   // Send new socket all information it needs to get up with the others
-  getRecord('participants', [], participants => socket.emit('change participants', participants))
+  getRecord('participants', room, [], participants => socket.emit('change participants', participants))
 
-  getRecord('activeParticipant', null, activeParticipant => socket.emit('change active participant', activeParticipant))
+  getRecord('activeParticipant', room, null, activeParticipant => socket.emit('change active participant', activeParticipant))
 
-  getRecord('bg', {image: "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg", mask: {color: '#7D7D7D', intensity: 25}}, bg => socket.emit('change background', bg))
+  getRecord('bg', room, {image: "https://clipart.wpblink.com/sites/default/files/wallpaper/drawn-forest/372214/drawn-forest-adobe-illustrator-372214-239163.jpg", mask: {color: '#7D7D7D', intensity: 25}}, bg => socket.emit('change background', bg))
 
-  getRecord('initiative', true, initiativeUse => {
+  getRecord('initiative', room, true, initiativeUse => {
     socket.emit('change initiative use', initiativeUse)
   })
 
@@ -73,21 +76,21 @@ const onDisconnect = (clientIP) => {
 }
 
 /* On Change Callbacks */
-const onParticipantsChange = newParticipants => {
-  saveRecord('participants', newParticipants, participants => {
-    io.emit('change participants', newParticipants)
+const onParticipantsChange = request => {
+  saveRecord('participants', request, participants => {
+    io.emit('change participants', request)
   })
 }
 
-const onActiveParticipantChange = activeParticipant => {
-  saveRecord('activeParticipant', activeParticipant, () => {
-    io.emit('change active participant', activeParticipant)
+const onActiveParticipantChange = request => {
+  saveRecord('activeParticipant', request, () => {
+    io.emit('change active participant', request)
   })
 }
 
-const onBGChange = bg => {
-  saveRecord('bg', bg, () => {
-    io.emit('change background', bg)
+const onBGChange = request => {
+  saveRecord('bg', request, () => {
+    io.emit('change background', request)
   })
 }
 
@@ -95,10 +98,11 @@ const onDisplayMessageChange = newMessage => {
   displayMessage = newMessage
   io.emit('change display message', displayMessage)
 }
+// TODO: Make display messages room specific
 
-const onInitiativeChange = initiativeUse => {
-  saveRecord('initiative', initiativeUse, () => {
-    io.emit('change initiative use', initiativeUse)
+const onInitiativeChange = request => {
+  saveRecord('initiative', request, () => {
+    io.emit('change initiative use', request)
   })
 }
 
@@ -115,6 +119,7 @@ const socketConnect = socket => {
   socket.on('change background', onBGChange)
   socket.on('change display message', onDisplayMessageChange)
   socket.on('change initiative use', onInitiativeChange)
+  socket.on('request room info', room => onRequestRoomInfo(room, socket))
 }
 
 io.on(`connection`, socketConnect)
