@@ -25,8 +25,6 @@ const onRequestRoomInfo = (room, socket) => {
   mongo.getRecord('initiative', room, true, initiativeUse => {
     socket.emit('change initiative use', initiativeUse)
   })
-
-  socket.emit('change display message', displayMessage)
 }
 
 // simple message logs when a client connects/disconnects
