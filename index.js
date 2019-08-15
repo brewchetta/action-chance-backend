@@ -13,11 +13,6 @@ let displayMessage = '|||'
 /* Socket.IO */
 
 // sends client all the up to date info once they're connected
-const onConnect = (socket) => {
-  const message = `---a new user connected: ${socket.handshake.headers.origin}---`
-  console.log(`\n---connection: ${socket.handshake.headers.origin} ---`)
-}
-
 const onRequestRoomInfo = (room, socket) => {
 
   // Send new socket all information it needs to get up with the others
@@ -34,14 +29,13 @@ const onRequestRoomInfo = (room, socket) => {
   socket.emit('change display message', displayMessage)
 }
 
-// simple message logs when a client disconnects
+// simple message logs when a client connects/disconnects
+const onConnect = (socket) => {
+  console.log(`\n---connection: ${socket.handshake.headers.origin} ---`)
+}
+
 const onDisconnect = (clientIP) => {
-  // Decrease user count
-  userCount --
-  // Send message to all other sockets
-  const message = `---a user disconnected: ${clientIP}---`
-  console.log(`\n---disconnect: ${clientIP} --------- ${userCount} users---`)
-  io.emit('user connect', {message, userCount})
+  console.log(`\n---disconnect: ${clientIP} ---`)
 }
 
 /* On Change Callbacks */
