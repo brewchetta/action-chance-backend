@@ -85,5 +85,16 @@ const socketConnect = socket => {
 
 io.on(`connection`, socketConnect)
 
+const shutdown = () => {
+  console.log('\nShutting down...')
+  io.emit('shutdown', 'Server is shutting down')
+  http.close(() => {
+    console.log(`Shutdown complete for port :${port}`)
+  })
+  process.nextTick(() => process.exit(0))
+}
+
+process.on('SIGINT', shutdown)
+
 /* Set server to listen */
 http.listen(port, () => console.log(`action-chance-backend listening on port :${port}`))
