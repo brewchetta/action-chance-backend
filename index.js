@@ -87,7 +87,7 @@ io.on(`connection`, socketConnect)
 
 const shutdown = () => {
   console.log('\nShutting down...')
-  io.emit('shutdown', 'Server is shutting down')
+  io.emit('shutdown', 'Server has shut down')
   http.close(() => {
     console.log(`Shutdown complete for port :${port}`)
   })
