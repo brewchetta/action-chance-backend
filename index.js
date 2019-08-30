@@ -8,7 +8,7 @@ const port = 3050
 const io = require(`socket.io`)(http)
 
 /* Variables */
-let displayMessage = '|||'
+const displayMessages = {}
 
 /* Socket.IO */
 
@@ -58,9 +58,9 @@ const onBGChange = request => {
   })
 }
 
-const onDisplayMessageChange = newMessage => {
-  displayMessage = newMessage
-  io.emit('change display message', displayMessage)
+const onDisplayMessageChange = request => {
+  displayMessages[request.room] = request.data
+  io.sockets.in(request.room).emit('change display message', request)
 }
 // TODO: Make display messages room specific
 
