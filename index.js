@@ -25,6 +25,9 @@ const onRequestRoomInfo = (room, socket) => {
   mongo.getRecord('initiative', room, true, initiativeUse => {
     socket.emit('change initiative use', initiativeUse)
   })
+
+  // And then add socket to room
+  socket.join(room)
 }
 
 // simple message logs when a client connects/disconnects
@@ -39,19 +42,19 @@ const onDisconnect = (clientIP) => {
 /* On Change Callbacks */
 const onParticipantsChange = request => {
   mongo.saveRecord('participants', request, participants => {
-    io.emit('change participants', request)
+    io.sockets.in(request.room).emit('change participants', request)
   })
 }
 
 const onActiveParticipantChange = request => {
   mongo.saveRecord('activeParticipant', request, () => {
-    io.emit('change active participant', request)
+    io.sockets.in(request.room).emit('change active participant', request)
   })
 }
 
 const onBGChange = request => {
   mongo.saveRecord('bg', request, () => {
-    io.emit('change background', request)
+    io.sockets.in(request.room).emit('change background', request)
   })
 }
 
@@ -63,7 +66,7 @@ const onDisplayMessageChange = newMessage => {
 
 const onInitiativeChange = request => {
   mongo.saveRecord('initiative', request, () => {
-    io.emit('change initiative use', request)
+    io.sockets.in(request.room).emit('change initiative use', request)
   })
 }
 
