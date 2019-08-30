@@ -85,6 +85,7 @@ const socketConnect = socket => {
 
 io.on(`connection`, socketConnect)
 
+// Send shutdown message
 const shutdown = () => {
   console.log('\nShutting down...')
   io.emit('shutdown', 'Server has shut down')
