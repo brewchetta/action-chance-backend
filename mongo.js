@@ -1,7 +1,6 @@
-const secrets = require('./secrets')
 const MongoClient = require(`mongodb`).MongoClient
 
-const uri = `mongodb+srv://${secrets.user}:${secrets.password}@ct1-cluster-ovzls.mongodb.net/test?retryWrites=true&w=majority`
+const uri = `mongodb+srv://${process.env.MONGOUSER}:${process.env.PASSWORD}@${process.env.CLUSTER}.mongodb.net/test?retryWrites=true&w=majority`
 
 const client = new MongoClient(uri, { useNewUrlParser: true });
 exports.client = client

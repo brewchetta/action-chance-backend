@@ -1,3 +1,6 @@
+// Get environmental files
+require('dotenv').config()
+
 // Import mongo connection
 const mongo = require('./mongo')
 
