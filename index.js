@@ -93,6 +93,7 @@ io.on(`connection`, socketConnect)
 
 // Send shutdown message
 const shutdown = () => {
+  mongo.client.close()
   console.log('\nShutting down...')
   io.emit('shutdown', 'Server has shut down')
   http.close(() => {

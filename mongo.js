@@ -1,9 +1,18 @@
+const secrets = require('./secrets')
 const MongoClient = require(`mongodb`).MongoClient
 
-const mongoConnect = callback => MongoClient.connect(`mongodb://localhost:27017/actionchance`, (error, client) => {
+const uri = `mongodb+srv://${secrets.user}:${secrets.password}@ct1-cluster-ovzls.mongodb.net/test?retryWrites=true&w=majority`
+
+const client = new MongoClient(uri, { useNewUrlParser: true });
+exports.client = client
+
+client.connect(error => {
   if (error) throw error
-  callback(client.db(`actionchance`))
 })
+
+const mongoConnect = callback => {
+  callback(client.db(`actionchance`))
+}
 
 // Get a record from a collection
 exports.getRecord = (name, room, _default, callback) => mongoConnect(db => {
