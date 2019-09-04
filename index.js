@@ -7,6 +7,9 @@ const http = require(`http`).createServer(app)
 const port = 3050
 const io = require(`socket.io`)(http)
 
+/* CORS */
+io.set('origins', '*:*')
+
 /* Variables */
 const displayMessages = {}
 
