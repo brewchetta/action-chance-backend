@@ -39,13 +39,13 @@ const getRoomInfo = (data, socket) => {
   })
 
   // And then add socket to room
-  socket.join(room)
+  socket.join(room.name)
 }
 
 // verify password match for the room
 const verifyPassword = (data, socket, callback) => {
-  mongo.getRecord('password', data.room, createToken(data.password), res => {
-    if (data.password === verifyToken(res.data)) callback()
+  mongo.getRecord('password', data.room, createToken(data.room.password), res => {
+    if (data.room.password === verifyToken(res.data)) callback()
     else {
       console.log(`---Invalid password: ${socket.handshake.headers.origin}---`)
       socket.emit('invalid password', 'Invalid password for this room')
@@ -70,31 +70,31 @@ const onDisconnect = (clientIP) => {
 /* On Change Callbacks */
 const onParticipantsChange = request => {
   mongo.saveRecord('participants', request, participants => {
-    io.sockets.in(request.room).emit('change participants', request)
+    io.sockets.in(request.room.name).emit('change participants', request)
   })
 }
 
 const onActiveParticipantChange = request => {
   mongo.saveRecord('activeParticipant', request, () => {
-    io.sockets.in(request.room).emit('change active participant', request)
+    io.sockets.in(request.room.name).emit('change active participant', request)
   })
 }
 
 const onBGChange = request => {
   mongo.saveRecord('bg', request, () => {
-    io.sockets.in(request.room).emit('change background', request)
+    io.sockets.in(request.room.name).emit('change background', request)
   })
 }
 
 const onDisplayMessageChange = request => {
-  displayMessages[request.room] = request.data
-  io.sockets.in(request.room).emit('change display message', request)
+  displayMessages[request.room.name] = request.data
+  io.sockets.in(request.room.name).emit('change display message', request)
 }
 // TODO: Make display messages room specific
 
 const onInitiativeChange = request => {
   mongo.saveRecord('initiative', request, () => {
-    io.sockets.in(request.room).emit('change initiative use', request)
+    io.sockets.in(request.room.name).emit('change initiative use', request)
   })
 }
 

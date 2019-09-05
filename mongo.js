@@ -15,14 +15,14 @@ const mongoConnect = callback => {
 
 // Get a record from a collection
 exports.getRecord = (name, room, _default, callback) => mongoConnect(db => {
-  db.collection(room).findOne({name}, (err, result) => {
+  db.collection(room.name).findOne({name}, (err, result) => {
     if (err) throw err
     if (!result) {
       console.log(`---creating new record of ${name} for ${room}---`)
       db.collection(room).insertOne({name, [name]: _default })
-      callback({room, data: _default})
+      callback({data: _default})
     } else {
-      callback({room, data: result[name]})
+      callback({data: result[name]})
     }
   })
 })
@@ -30,6 +30,6 @@ exports.getRecord = (name, room, _default, callback) => mongoConnect(db => {
 // Save a record to a colletion
 // --> uses findAndReplace rather than insert since it should already exist
 exports.saveRecord = (name, request, callback) => mongoConnect(db => {
-  db.collection(request.room).findOneAndReplace({name}, {name, [name]:request.data})
-  callback(request)
+  db.collection(request.room.name).findOneAndReplace({name}, {name, [name]:request.data})
+  callback(request.data)
 })
