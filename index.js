@@ -1,6 +1,7 @@
-// Get environmental files
+// Import environmental files
 require('dotenv').config()
-
+// Import JWT
+const jwt = require('jsonwebtoken')
 // Import mongo connection
 const mongo = require('./mongo')
 
@@ -12,6 +13,10 @@ const io = require(`socket.io`)(http)
 
 /* CORS */
 io.set('origins', '*:*')
+
+/* JWT */
+const createToken = payload => jwt.sign(payload, process.env.SECRET, { algorithm: process.env.ALGORITHM })
+const verifyToken = token => jwt.verify(token, process.env.SECRET, { algorithm: process.env.ALGORITHM })
 
 /* Variables */
 const displayMessages = {}
