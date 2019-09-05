@@ -20,7 +20,7 @@ exports.getRecord = (name, room, _default, callback) => mongoConnect(db => {
     if (!result) {
       console.log(`---creating new record of ${name} for ${room}---`)
       db.collection(room).insertOne({name, [name]: _default })
-      callback({room: room, data: _default})
+      callback({room, data: _default})
     } else {
       callback({room, data: result[name]})
     }

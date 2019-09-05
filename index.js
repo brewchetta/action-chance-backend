@@ -24,7 +24,8 @@ const displayMessages = {}
 /* Socket.IO */
 
 // sends client all the up to date info once they're connected
-const onRequestRoomInfo = (room, socket) => {
+const getRoomInfo = (data, socket) => {
+  const room = data.room
 
   // Send new socket all information it needs to get up with the others
   mongo.getRecord('participants', room, [], participants => socket.emit('change participants', participants))
@@ -39,6 +40,22 @@ const onRequestRoomInfo = (room, socket) => {
 
   // And then add socket to room
   socket.join(room)
+}
+
+// verify password match for the room
+const verifyPassword = (data, socket, callback) => {
+  mongo.getRecord('password', data.room, data.password, res => {
+    if (data.password === res.data) callback()
+    else {
+      console.log(`---Invalid password: ${socket.handshake.headers.origin}---`)
+      socket.emit('invalid password', 'Invalid password for this room')
+    }
+  })
+}
+
+// verifies password and then sends room info
+const onRequestRoomInfo = (data, socket) => {
+  verifyPassword(data, socket, () => getRoomInfo(data, socket))
 }
 
 // simple message logs when a client connects/disconnects
@@ -94,7 +111,7 @@ const socketConnect = socket => {
   socket.on('change background', onBGChange)
   socket.on('change display message', onDisplayMessageChange)
   socket.on('change initiative use', onInitiativeChange)
-  socket.on('request room info', room => onRequestRoomInfo(room, socket))
+  socket.on('request room info', data => onRequestRoomInfo(data, socket))
 }
 
 io.on(`connection`, socketConnect)
