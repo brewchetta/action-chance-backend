@@ -44,8 +44,8 @@ const getRoomInfo = (data, socket) => {
 
 // verify password match for the room
 const verifyPassword = (data, socket, callback) => {
-  mongo.getRecord('password', data.room, data.password, res => {
-    if (data.password === res.data) callback()
+  mongo.getRecord('password', data.room, createToken(data.password), res => {
+    if (data.password === verifyToken(res.data)) callback()
     else {
       console.log(`---Invalid password: ${socket.handshake.headers.origin}---`)
       socket.emit('invalid password', 'Invalid password for this room')
