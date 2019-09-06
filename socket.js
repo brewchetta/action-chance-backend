@@ -110,7 +110,7 @@ io.on(`connection`, socketConnect)
 const shutdown = () => {
   mongo.client.close()
   console.log('\nShutting down...')
-  socket.io.emit('shutdown', 'Server has shut down')
+  io.emit('shutdown', 'Server has shut down')
   con.http.close(() => {
     console.log(`Shutdown complete for port :${con.port}`)
   })
