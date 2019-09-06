@@ -1,4 +1,4 @@
-require('dotenv').config()
+// require('dotenv').config()
 const socket = require('./socket')
 const mongo = require('./mongo')
 const con = require('./constants')
