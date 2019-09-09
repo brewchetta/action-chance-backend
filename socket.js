@@ -112,7 +112,7 @@ exports.shutdown = () => {
   console.log('\nShutting down...')
   io.emit('shutdown', 'Server has shut down')
   con.http.close(() => {
-    console.log(`Shutdown complete for port :${con.port}`)
+    console.log(`Shutdown complete for port :${process.env.PORT}`)
   })
   process.nextTick(() => process.exit(0))
 }
