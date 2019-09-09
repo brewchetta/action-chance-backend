@@ -11,8 +11,6 @@ const defaultRoom = [
   }},
   {name: 'initiative', initiative: true}
 ]
-const port = 3050
 
 exports.defaultRoom = defaultRoom
-exports.port = port
 exports.http = http
