@@ -7,7 +7,7 @@ const io = require(`socket.io`)(con.http)
 /* CORS */
 io.origins((origin, callback) => {
   console.log(`---incoming request from ${origin}---`)
-  if (origin) {
+  if (origin !== 'https://brewchetta.github.io') {
     return callback('origin allowed', true)
   }
 
