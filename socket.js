@@ -6,7 +6,7 @@ const io = require(`socket.io`)(con.http)
 
 /* CORS */
 if (process.env.NODE_ENV !== 'production') {
-  io.origins('*:*')
+  io.origins((origin, callback) => callback(null, true))
 } else {
   io.origins((origin, callback) => {
     console.log(`---incoming request from ${origin}---`)
