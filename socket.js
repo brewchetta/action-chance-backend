@@ -12,9 +12,11 @@ if (process.env.NODE_ENV !== 'production') {
     console.log(`---incoming request from ${origin}---`)
     // Comment out the if statement
     if (origin === 'https://brewchetta.github.io') {
+      console.log('---request accepted---')
       return callback('origin allowed', true)
     }
 
+    console.log('---request denied---')
     callback(null, false)
   })
 }
