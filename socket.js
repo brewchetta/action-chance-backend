@@ -11,7 +11,7 @@ if (process.env.NODE_ENV !== 'production') {
   io.origins((origin, callback) => {
     console.log(`---incoming request from ${origin}---`)
     // Comment out the if statement
-    if (origin !== 'https://brewchetta.github.io') {
+    if (origin === 'https://brewchetta.github.io') {
       return callback('origin allowed', true)
     }
 
