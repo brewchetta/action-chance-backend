@@ -10,7 +10,6 @@ if (process.env.NODE_ENV !== 'production') {
 } else {
   io.origins((origin, callback) => {
     console.log(`---incoming request from ${origin}---`)
-    // Comment out the if statement
     if (origin === 'https://brewchetta.github.io') {
       console.log('---request accepted---')
       return callback('origin allowed', true)
@@ -126,7 +125,7 @@ exports.shutdown = () => {
   console.log('\nShutting down...')
   io.emit('shutdown', 'Server has shut down')
   con.http.close(() => {
-    console.log(`Shutdown complete for port :${process.env.PORT}`)
+    if (process.env.PORT) console.log(`Shutdown complete for :${process.env.PORT}`)
   })
   process.nextTick(() => process.exit(0))
 }
