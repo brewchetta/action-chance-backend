@@ -7,11 +7,7 @@ console.clear()
 console.time('Runtime')
 
 /* Set server to listen */
-if (process.env.NODE_ENV !== 'production') {
-  con.http.listen(process.env.PORT, () => console.log(`action-chance-backend listening on ${process.env.PORT}`))
-} else {
-  con.http.listen(() => console.log('action-chance-backend listening'))
-}
+con.http.listen(process.env.PORT, () => console.log(`action-chance-backend listening on ${process.env.PORT}`))
 
 // Shutdown
 process.on('SIGINT', () => {
