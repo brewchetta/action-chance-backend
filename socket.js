@@ -5,7 +5,7 @@ const mongo = require('./mongo')
 const io = require(`socket.io`)(con.http)
 
 /* CORS */
-io.set('origins', '*:*')
+io.set('origins', '*')
 
 /* Variables */
 const displayMessages = {}
