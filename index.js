@@ -7,7 +7,7 @@ console.clear()
 console.time('Runtime')
 
 /* Set server to listen */
-con.http.listen(process.env.PORT, () => console.log(`action-chance-backend listening on ${process.env.PORT}`))
+con.http.listen(process.env.PORT || 3050, () => console.log(`action-chance-backend listening on ${process.env.PORT || 3050}`))
 
 // Shutdown
 process.on('SIGINT', () => {
